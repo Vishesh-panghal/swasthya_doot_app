@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1039658248167",
+    "project_id": "swasthya-doot-3ad0d",
+    "storage_bucket": "swasthya-doot-3ad0d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039658248167:android:3b890f7038da50815e7f42",
+        "android_client_info": {
+          "package_name": "com.example.swasthya_doot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCeMp3cf0Iuo28_psYzq3mXJvl4x-XA5N8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
