@@ -5,7 +5,7 @@ import 'package:swasthya_doot/pages/askDidi.dart';
 import 'package:swasthya_doot/pages/detect.dart';
 import 'package:swasthya_doot/pages/record.dart';
 import 'package:swasthya_doot/pages/setting.dart';
-import 'package:swasthya_doot/profile.dart';
+import 'package:swasthya_doot/pages/profile.dart';
 import 'package:swasthya_doot/widgets/common_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

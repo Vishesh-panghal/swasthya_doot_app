@@ -8,7 +8,7 @@ import 'package:swasthya_doot/cubit/auth/phone_auth_cubit.dart';
 import 'package:swasthya_doot/cubit/register/register_cubit.dart';
 import 'package:swasthya_doot/firebase_options.dart';
 
-import 'package:swasthya_doot/splashscreen.dart';
+import 'package:swasthya_doot/pages/splashscreen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
