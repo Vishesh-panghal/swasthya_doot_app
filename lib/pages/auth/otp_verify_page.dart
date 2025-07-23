@@ -126,6 +126,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                       title: 'One Time Password',
                       size: size.height * 0.087,
                       icn: Icons.lock_outline,
+                      keyboardType: TextInputType.number,
                     ),
                     Gap(size.height * 0.008),
                     Text(

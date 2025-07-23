@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:gap/gap.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:swasthya_doot/pages/auth/login_page.dart';
 
 class MyProfilePage extends StatefulWidget {
@@ -29,27 +30,38 @@ class _MyProfilePageState extends State<MyProfilePage> {
   }
 
   Future<void> fetchUserDetails() async {
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      final uid = currentUser.uid;
-      final userDoc =
-          await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        final uid = currentUser.uid;
+        final userDoc =
+            await FirebaseFirestore.instance.collection('users').doc(uid).get();
 
-      final prefs = await SharedPreferences.getInstance();
-      final lang = prefs.getString('preferred_language') ?? 'Hindi';
+        final prefs = await SharedPreferences.getInstance();
+        final lang = prefs.getString('preferred_language') ?? 'Hindi';
 
-      if (userDoc.exists) {
-        final data = userDoc.data()!;
-        setState(() {
-          name = data['fullName'] ?? 'User';
-          role = data['role'] ?? 'role';
-          location = data['village'] ?? 'location';
-          phone = data['phoneNumber'] ?? '';
-          preferredLanguage = lang;
-          isLoading = false;
-        });
-      } else {
+        if (userDoc.exists) {
+          final data = userDoc.data()!;
+          if (mounted) {
+            setState(() {
+              name = data['fullName'] ?? 'User';
+              role = data['role'] ?? 'role';
+              location = data['village'] ?? 'location';
+              phone = data['phoneNumber'] ?? '';
+              preferredLanguage = lang;
+              isLoading = false;
+            });
+          }
+        } else {
+          if (mounted) setState(() => isLoading = false);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() => isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching user data')),
+        );
       }
     }
   }
@@ -68,7 +80,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
       body: SafeArea(
         child:
             isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? buildShimmerLoader(size)
                 : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -314,3 +326,150 @@ class _MyProfilePageState extends State<MyProfilePage> {
     );
   }
 }
+
+  Widget buildShimmerLoader(Size size) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              width: 120,
+              height: 32,
+              color: Colors.white,
+              margin: const EdgeInsets.only(bottom: 8),
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              width: 180,
+              height: 18,
+              color: Colors.white,
+              margin: const EdgeInsets.only(bottom: 24),
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              height: size.height * 0.18,
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              height: 20,
+              width: size.width * 0.4,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              color: Colors.white,
+            ),
+          ),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              height: 20,
+              width: size.width * 0.6,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: size.height * 0.025),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              width: 130,
+              height: 22,
+              color: Colors.white,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+            ),
+          ),
+          SizedBox(height: size.height * 0.01),
+          Row(
+            children: [
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 80,
+                  height: 36,
+                  color: Colors.white,
+                  margin: const EdgeInsets.only(right: 12),
+                ),
+              ),
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 80,
+                  height: 36,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: size.height * 0.02),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              width: 150,
+              height: 22,
+              color: Colors.white,
+              margin: const EdgeInsets.symmetric(vertical: 8),
+            ),
+          ),
+          SizedBox(height: 12),
+          Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(
+              height: 48,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+            ),
+          ),
+          SizedBox(height: size.height * 0.02),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 100,
+                  height: 18,
+                  color: Colors.white,
+                ),
+              ),
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 90,
+                  height: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }

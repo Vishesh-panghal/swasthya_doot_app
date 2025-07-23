@@ -51,6 +51,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
             child: BlocConsumer<PhoneAuthCubit, PhoneAuthState>(
               listener: (context, state) {
                 if (state is PhoneAuthCodeSentWithId) {
+                  if (!mounted) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -64,6 +65,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                 }
 
                 if (state is PhoneAuthError) {
+                  if (!mounted) return;
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text(state.message)));
@@ -91,7 +93,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       NameLogoWidget(size: size),
-                      Gap(size.height * 0.05),
+                      Gap(size.height < 600 ? 20 : size.height * 0.05),
                       Text(
                         'Login with Phone',
                         textAlign: TextAlign.center,
@@ -112,6 +114,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                             icn: Icons.phone,
                             controller: phoneController,
                             focusNode: phoneFocusNode,
+                            keyboardType: TextInputType.phone,
                           ),
                         ),
                       ),
@@ -142,6 +145,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                                   if (!RegExp(
                                     r'^[6-9]\d{9}$',
                                   ).hasMatch(phone)) {
+                                    if (!context.mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
                                         behavior: SnackBarBehavior.floating,
@@ -164,6 +168,8 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                                             .limit(1)
                                             .get();
 
+                                    if (!context.mounted) return;
+
                                     if (query.docs.isEmpty) {
                                       ScaffoldMessenger.of(
                                         context,
@@ -183,6 +189,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                                       phone,
                                     );
                                   } catch (e) {
+                                    if (!context.mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(

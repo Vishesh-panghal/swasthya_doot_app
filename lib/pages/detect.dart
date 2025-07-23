@@ -24,6 +24,7 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
   String? _expiry;
 
   List<Map<String, String>> _medicineData = [];
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -32,17 +33,21 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
   }
 
   Future<void> _loadMedicineList() async {
-    final rawData = await rootBundle.loadString("assets/asha_anm_medicines_with_usage_hi.csv");
-    final List<List<dynamic>> csvTable = const CsvToListConverter().convert(rawData, eol: '\n');
-    final List<Map<String, String>> data = csvTable.skip(1).map((row) {
-      return {
-        "name": row[0].toString(),
-        "used_for": row[1].toString(),
-      };
-    }).toList();
-    setState(() {
-      _medicineData = data;
-    });
+    try {
+      final rawData = await rootBundle.loadString("assets/asha_anm_medicines_with_usage_hi.csv");
+      final List<List<dynamic>> csvTable = const CsvToListConverter().convert(rawData, eol: '\n');
+      final List<Map<String, String>> data = csvTable.skip(1).map((row) {
+        return {
+          "name": row[0].toString(),
+          "used_for": row[1].toString(),
+        };
+      }).toList();
+      setState(() {
+        _medicineData = data;
+      });
+    } catch (e) {
+      debugPrint('Error loading medicine list: $e');
+    }
   }
 
   Future<void> _pickImage() async {
@@ -54,7 +59,13 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
       setState(() {
         _selectedImage = image;
       });
+      setState(() {
+        _isProcessing = true;
+      });
       await _processImageWithOCR(image); // Run OCR
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
   Future<void> _openCamera() async {
@@ -64,7 +75,13 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
       setState(() {
         _selectedImage = image;
       });
+      setState(() {
+        _isProcessing = true;
+      });
       await _processImageWithOCR(image); // Run OCR
+      setState(() {
+        _isProcessing = false;
+      });
     }
   }
 
@@ -115,6 +132,8 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
             RegExp(r'(0[1-9]|1[0-2])[/-](\d{2,4})'),
             RegExp(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[-/ ]?\d{2,4}', caseSensitive: false),
             RegExp(r'\d{2}[/-]\d{2,4}'),
+            RegExp(r'\d{4}[-/](0[1-9]|1[0-2])'), // YYYY-MM
+            RegExp(r'\b(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[0-2])[- /.]\d{2,4}\b'), // DD-MM-YYYY
           ];
 
           for (final pattern in expiryDatePatterns) {
@@ -134,6 +153,53 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
       _usedFor = usedFor ?? "उपलब्ध नहीं";
       _expiry = expiry ?? "Not found";
     });
+  }
+
+  Widget _buildUsageCard(Size size) {
+    return Card(
+      elevation: 4,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: EdgeInsets.all(size.width * 0.04),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('कैसे इस्तेमाल करें:', style: GoogleFonts.openSans(fontSize: size.height * 0.022, fontWeight: FontWeight.bold)),
+            Gap(size.height * 0.015),
+            UsageTip(text: 'दवाई को एक साधारण रंग की जगह (जैसे सफेद कपड़ा) पर रखें'),
+            UsageTip(text: 'साफ़ और अच्छी रोशनी में फोटो लें'),
+            UsageTip(text: 'कैमरा को दवाई के ठीक ऊपर रखें'),
+            UsageTip(text: 'पूरी गोली या पैक को साफ़-साफ़ दिखाएं'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResultCard() {
+    return Semantics(
+      label: 'Extracted pill information',
+      child: Card(
+        elevation: 4,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('📋 Extracted Pill Info:', style: TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(height: 10),
+              Text('💊 Pill Name: $_pillName'),
+              Text('🧪 Dosage: $_dosage'),
+              Text('📌 Used For: $_usedFor'),
+              Text('📅 Expiry: $_expiry'),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -170,36 +236,7 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
                   ),
                 ),
                 Gap(size.height * 0.02),
-                Card(
-                  elevation: 4,
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(size.width * 0.04),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'कैसे इस्तेमाल करें:',
-                          style: GoogleFonts.openSans(
-                            fontSize: size.height * 0.022,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Gap(size.height * 0.015),
-                        UsageTip(
-                          text:
-                              'दवाई को एक साधारण रंग की जगह (जैसे सफेद कपड़ा) पर रखें',
-                        ),
-                        UsageTip(text: 'साफ़ और अच्छी रोशनी में फोटो लें'),
-                        UsageTip(text: 'कैमरा को दवाई के ठीक ऊपर रखें'),
-                        UsageTip(text: 'पूरी गोली या पैक को साफ़-साफ़ दिखाएं'),
-                      ],
-                    ),
-                  ),
-                ),
+                _buildUsageCard(size),
                 Gap(size.height * 0.02),
                 Card(
                   elevation: 4,
@@ -243,30 +280,12 @@ class _MyDetectScreenState extends State<MyDetectScreen> {
                       ),
                     ),
                   ),
+                if (_isProcessing)
+                  const Center(child: CircularProgressIndicator()),
                 if (_pillName != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 20),
-                    child: Card(
-                      elevation: 4,
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('📋 Extracted Pill Info:', style: TextStyle(fontWeight: FontWeight.bold)),
-                            SizedBox(height: 10),
-                            Text('💊 Pill Name: $_pillName'),
-                            Text('🧪 Dosage: $_dosage'),
-                            Text('📌 Used For: $_usedFor'),
-                            Text('📅 Expiry: $_expiry'),
-                          ],
-                        ),
-                      ),
-                    ),
+                    child: _buildResultCard(),
                   ),
               ],
             ),

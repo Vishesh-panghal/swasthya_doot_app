@@ -43,6 +43,14 @@ class _MyAskDidiScreenState extends State<MyAskDidiScreen> {
     _speech = stt.SpeechToText();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    _speech.stop();
+    super.dispose();
+  }
+
   void _stopListening() {
     _speech.stop();
     setState(() => _isListening = false);
@@ -109,17 +117,15 @@ class _MyAskDidiScreenState extends State<MyAskDidiScreen> {
                 padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
                 children:
                     _messages.reversed.map((msg) {
-                      return msg['sender'] == 'user'
-                          ? _buildUserMessage(
-                            context,
-                            msg['text']!,
-                            msg['time']!,
-                          )
-                          : _buildBotMessage(
-                            context,
-                            msg['text']!,
-                            msg['time']!,
-                          );
+                      return AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return FadeTransition(opacity: animation, child: child);
+                        },
+                        child: msg['sender'] == 'user'
+                            ? _buildUserMessage(context, msg['text']!, msg['time']!)
+                            : _buildBotMessage(context, msg['text']!, msg['time']!),
+                      );
                     }).toList(),
               ),
             ),
@@ -319,7 +325,12 @@ Widget _buildUserMessage(BuildContext context, String message, String time) {
         Flexible(
           child: Material(
             elevation: 3,
-            shadowColor: Colors.grey.withOpacity(0.2),
+            shadowColor: Colors.grey.withValues(
+              alpha: 51,
+              red: 158,
+              green: 158,
+              blue: 158,
+            ),
             borderRadius: BorderRadius.circular(12),
             color: Colors.green.shade400,
             child: Container(

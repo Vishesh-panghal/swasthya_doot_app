@@ -52,6 +52,7 @@ class CustomTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller;
   final FocusNode? focusNode;
+  final TextInputType? keyboardType;
 
   const CustomTextField({
     required this.inData,
@@ -63,54 +64,52 @@ class CustomTextField extends StatelessWidget {
     this.onChanged,
     this.controller,
     this.focusNode,
+    this.keyboardType,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _internalController = TextEditingController(
+    final TextEditingController internalController = TextEditingController(
       text: initialValue,
     );
-    return SizedBox(
-      height: size,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title ?? "",
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-          const Gap(8),
-          TextField(
-            controller: controller ?? _internalController,
-            focusNode: focusNode,
-            textDirection: TextDirection.ltr,
-            enabled: isEnabled,
-            keyboardType: TextInputType.text,
-            style: const TextStyle(fontSize: 14),
-            decoration: InputDecoration(
-              labelText: inData,
-              prefixIcon: Icon(icn, size: 20),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 10,
-                horizontal: 12,
-              ),
-              border: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-              ),
-              enabledBorder: const OutlineInputBorder(
-                borderSide: BorderSide(width: 0),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderSide: BorderSide(width: 0),
-              ),
-              filled: true,
-              fillColor: const Color(0xFFF5F5F5),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title ?? "",
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
+        const Gap(8),
+        TextField(
+          controller: controller ?? internalController,
+          focusNode: focusNode,
+          textDirection: TextDirection.ltr,
+          enabled: isEnabled,
+          keyboardType: keyboardType ?? TextInputType.text,
+          style: const TextStyle(fontSize: 14),
+          decoration: InputDecoration(
+            labelText: inData,
+            prefixIcon: Icon(icn, size: 20),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 12,
             ),
-            onChanged: onChanged,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+            ),
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(width: 0),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(width: 0),
+            ),
+            filled: true,
+            fillColor: const Color(0xFFF5F5F5),
           ),
-        ],
-      ),
+          onChanged: onChanged,
+        ),
+      ],
     );
   }
 }
@@ -369,20 +368,18 @@ class MembersCard extends StatefulWidget {
   final String phone;
   final String date;
   final String village;
-  final String time;
   final String address;
   final String aashaId;
   final List<MemberModel> members;
   final void Function(MemberModel) onAddMember;
   final VoidCallback? onRefresh;
 
-  MembersCard({
+  const MembersCard({
     super.key,
     required this.name,
     required this.phone,
     required this.date,
     required this.village,
-    required this.time,
     required this.address,
     required this.aashaId,
     required this.members,
@@ -411,11 +408,9 @@ class _MembersCardState extends State<MembersCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Left: Head, date, village, phone
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -429,15 +424,6 @@ class _MembersCardState extends State<MembersCard> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey,
-                        ),
-                        Text(_formatTime(Timestamp.now().toDate())),
-                        const SizedBox(width: 4),
-                        Text(widget.date),
-                        const SizedBox(width: 12),
                         const Icon(
                           Icons.location_on,
                           size: 14,
@@ -539,7 +525,8 @@ class _MembersCardState extends State<MembersCard> {
                           ),
                           Row(
                             children: [
-                              if (FirebaseAuth.instance.currentUser?.uid == widget.aashaId)
+                              if (FirebaseAuth.instance.currentUser?.uid ==
+                                  widget.aashaId)
                                 TextButton(
                                   onPressed: () async {
                                     final updatedFamily =
@@ -565,38 +552,54 @@ class _MembersCardState extends State<MembersCard> {
                                   },
                                   child: const Text('Edit'),
                                 ),
-                              if (FirebaseAuth.instance.currentUser?.uid == widget.aashaId)
+                              if (FirebaseAuth.instance.currentUser?.uid ==
+                                  widget.aashaId)
                                 TextButton(
                                   onPressed: () async {
                                     final confirm = await showDialog<bool>(
                                       context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text("Delete Family"),
-                                        content: const Text(
-                                          "Are you sure you want to delete this family and all its members?",
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, false),
-                                            child: const Text("Cancel"),
-                                          ),
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, true),
-                                            child: const Text(
-                                              "Delete",
-                                              style: TextStyle(
-                                                color: Colors.red,
-                                              ),
+                                      builder:
+                                          (context) => AlertDialog(
+                                            title: const Text("Delete Family"),
+                                            content: const Text(
+                                              "Are you sure you want to delete this family and all its members?",
                                             ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.pop(
+                                                      context,
+                                                      false,
+                                                    ),
+                                                child: const Text("Cancel"),
+                                              ),
+                                              TextButton(
+                                                onPressed:
+                                                    () => Navigator.pop(
+                                                      context,
+                                                      true,
+                                                    ),
+                                                child: const Text(
+                                                  "Delete",
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
                                     );
                                     if (confirm == true) {
                                       await FirebaseFirestore.instance
                                           .collection("families")
-                                          .where("phone", isEqualTo: widget.phone)
-                                          .where("aasha_id", isEqualTo: widget.aashaId)
+                                          .where(
+                                            "phone",
+                                            isEqualTo: widget.phone,
+                                          )
+                                          .where(
+                                            "aasha_id",
+                                            isEqualTo: widget.aashaId,
+                                          )
                                           .get()
                                           .then((snap) {
                                             for (final doc in snap.docs) {
@@ -604,9 +607,13 @@ class _MembersCardState extends State<MembersCard> {
                                             }
                                           });
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           const SnackBar(
-                                            content: Text("Family deleted successfully"),
+                                            content: Text(
+                                              "Family deleted successfully",
+                                            ),
                                             backgroundColor: Colors.green,
                                           ),
                                         );
@@ -764,10 +771,14 @@ class _MembersCardState extends State<MembersCard> {
 
                       if (confirm == true) {
                         // Check if current user is ASHA for this family
-                        if (FirebaseAuth.instance.currentUser?.uid != widget.aashaId) {
+                        if (FirebaseAuth.instance.currentUser?.uid !=
+                            widget.aashaId) {
+                          if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Only ASHA can edit or delete this data."),
+                              content: Text(
+                                "Only ASHA can edit or delete this data.",
+                              ),
                               backgroundColor: Colors.red,
                             ),
                           );
@@ -787,12 +798,15 @@ class _MembersCardState extends State<MembersCard> {
                                 .get();
 
                         for (final doc in snapshot.docs) {
-                          final membersCollection = doc.reference.collection("members");
-                          final query = await membersCollection
-                              .where("name", isEqualTo: member.name)
-                              .where("aadhar", isEqualTo: member.aadhar)
-                              .where("relation", isEqualTo: member.relation)
-                              .get();
+                          final membersCollection = doc.reference.collection(
+                            "members",
+                          );
+                          final query =
+                              await membersCollection
+                                  .where("name", isEqualTo: member.name)
+                                  .where("aadhar", isEqualTo: member.aadhar)
+                                  .where("relation", isEqualTo: member.relation)
+                                  .get();
 
                           for (final mDoc in query.docs) {
                             await mDoc.reference.delete();
@@ -1310,7 +1324,7 @@ class _AddMemberFormState extends State<AddMemberForm> {
   }
 }
 
-// =========================================================== TypingIndicator =======================================================//
+// ====================================================== TypingIndicator ===================================================//
 
 class TypingIndicator extends StatelessWidget {
   const TypingIndicator({super.key});
@@ -1382,7 +1396,7 @@ class _DotBounceState extends State<DotBounce>
     return AnimatedBuilder(
       animation: _controller,
       builder:
-          (_, __) => Transform.translate(
+          (_, _) => Transform.translate(
             offset: Offset(0, _animation.value),
             child: Container(
               width: 6,

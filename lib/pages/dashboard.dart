@@ -9,23 +9,83 @@ import 'package:swasthya_doot/pages/profile.dart';
 import 'package:swasthya_doot/widgets/common_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:location/location.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:quick_actions/quick_actions.dart';
+import 'package:permission_handler/permission_handler.dart' as permission;
+import 'package:flutter/services.dart';
 
-class MyDashboardScreen extends StatelessWidget {
+class MyDashboardScreen extends StatefulWidget {
   final Function(int)? onTabSelected;
   const MyDashboardScreen({super.key, this.onTabSelected});
+
+  @override
+  State<MyDashboardScreen> createState() => _MyDashboardScreenState();
+}
+
+class _MyDashboardScreenState extends State<MyDashboardScreen> {
+  final QuickActions quickActions = const QuickActions();
+
+  @override
+  void initState() {
+    super.initState();
+    quickActions.setShortcutItems([
+      const ShortcutItem(
+        type: 'emergency',
+        localizedTitle: 'Send Emergency',
+        icon: 'icon_emergency', // ensure you add this asset in Android
+      ),
+    ]);
+
+    quickActions.initialize((type) {
+      if (type == 'emergency') {
+        _sendEmergencyLocation();
+      }
+    });
+  }
+
+  Future<void> _sendEmergencyLocation() async {
+    final locationStatus = await permission.Permission.location.request();
+
+    if (locationStatus != permission.PermissionStatus.granted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location permission is required.'),
+        ),
+      );
+      return;
+    }
+
+    try {
+      const platform = MethodChannel('emergency_channel');
+      await platform.invokeMethod('startEmergencyService');
+
+      // UI fallback: show confirmation
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("🚨 Emergency background alert triggered")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("❌ Failed to trigger emergency service: $e")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            vertical: size.height * 0.01,
-            horizontal: size.width * 0.03,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView(
+            // added comma after opening parenthesis and before padding
+            padding: EdgeInsets.symmetric(
+              vertical: size.height * 0.01,
+              horizontal: size.width * 0.03,
+            ),
             children: [
               FutureBuilder<DocumentSnapshot>(
                 future:
@@ -71,13 +131,18 @@ class MyDashboardScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: LinearGradient(
-                              colors: [Colors.blue.shade200, Colors.blue.shade600],
+                              colors: [
+                                Colors.blue.shade200,
+                                Colors.blue.shade600,
+                              ],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withAlpha((0.1 * 255).toInt()),
+                                color: Colors.black.withAlpha(
+                                  (0.1 * 255).toInt(),
+                                ),
                                 blurRadius: 4,
                                 offset: const Offset(0, 2),
                               ),
@@ -98,7 +163,6 @@ class MyDashboardScreen extends StatelessWidget {
                   );
                 },
               ),
-
               Text(
                 'Welcome to Swasthya Doot',
                 style: TextStyle(
@@ -115,7 +179,7 @@ class MyDashboardScreen extends StatelessWidget {
                 subtitle: 'Voice assistant for health information',
                 icon: Icons.mic_none_rounded,
                 clr: Color.fromARGB(255, 0, 97, 253),
-                onTap: () => onTabSelected?.call(1),
+                onTap: () => widget.onTabSelected?.call(1),
               ),
               Gap(size.height * 0.02),
               DashboardCard(
@@ -123,7 +187,7 @@ class MyDashboardScreen extends StatelessWidget {
                 subtitle: 'Identify medicines using your camera',
                 icon: Icons.camera_alt_outlined,
                 clr: Color(0xFFFA8900),
-                onTap: () => onTabSelected?.call(2),
+                onTap: () => widget.onTabSelected?.call(2),
               ),
               Gap(size.height * 0.02),
               DashboardCard(
@@ -131,7 +195,7 @@ class MyDashboardScreen extends StatelessWidget {
                 subtitle: 'View and manage all patient interaction records',
                 icon: Icons.description_outlined,
                 clr: Color(0xFF4DB051),
-                onTap: () => onTabSelected?.call(3),
+                onTap: () => widget.onTabSelected?.call(3),
               ),
               Gap(size.height * 0.03),
               Text(
@@ -142,56 +206,78 @@ class MyDashboardScreen extends StatelessWidget {
                 ),
               ),
               Gap(size.height * 0.02),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    height: size.height * 0.2,
-                    width: size.width * 0.9,
-                    padding: EdgeInsets.symmetric(vertical: size.height * 0.01),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade400,
-                          blurRadius: 6,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: size.height * 0.01),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade400,
+                      blurRadius: 6,
+                      offset: const Offset(0, 4),
                     ),
-                    child: ListView(
-                      physics: NeverScrollableScrollPhysics(),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    CustomListTileWidget(
+                      title: '4 members added today',
+                      workDay: 'Today',
+                      icn: Icons.people,
+                      backgroundClr: Colors.greenAccent.shade100,
+                      clr: Colors.green,
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        CustomListTileWidget(
-                          title: '4 patients visited today',
-                          workDay: 'Today',
-                          icn: Icons.people,
-                          backgroundClr: Colors.greenAccent.shade100,
-                          clr: Colors.green,
+                        Expanded(
+                          child: CustomListTileWidget(
+                            title: 'Emergency',
+                            workDay: '',
+                            icn: Icons.warning_amber_rounded,
+                            backgroundClr: Colors.red.shade100,
+                            clr: Colors.redAccent,
+                          ),
                         ),
-                        CustomListTileWidget(
-                          title: 'Health camp scheduled',
-                          workDay: 'Tomorrow',
-                          icn: Icons.info_outline,
-                          clr: Colors.blue,
-                          backgroundClr: Colors.blue.shade200,
-                        ),
-                        CustomListTileWidget(
-                          title: 'New guideline available',
-                          workDay: '2 days ago',
-                          icn: Icons.notifications_none,
-                          clr: Colors.orange,
-                          backgroundClr: Colors.orange.shade200,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: ElevatedButton(
+                            onPressed: _sendEmergencyLocation,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 20,
+                              ),
+                              textStyle: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Send Location'),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    Gap(size.height * 0.01),
+                    CustomListTileWidget(
+                      title: 'New guideline available',
+                      workDay: '2 days ago',
+                      icn: Icons.notifications_none,
+                      clr: Colors.orange,
+                      backgroundClr: Colors.orange.shade200,
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }

@@ -41,246 +41,291 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return Scaffold(
       backgroundColor: ColorConstants.background_color,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Gap(size.height * 0.1),
-              NameLogoWidget(size: size),
-              Gap(size.height * 0.04),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  vertical: size.height * 0.02,
-                  horizontal: size.width * 0.04,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Gap(size.height * 0.1),
+                NameLogoWidget(size: size),
+                Gap(
+                  size.height < 700 ? size.height * 0.02 : size.height * 0.04,
                 ),
-                width: size.width * 0.9,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
-                  border: Border.all(width: 0.1, color: Colors.white30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.shade400,
-                      blurRadius: 6,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Create Account',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: size.width * 0.055,
-                        fontWeight: FontWeight.w600,
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: size.width < 360 ? 16 : size.width * 0.04,
+                  ),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                    border: Border.all(width: 0.1, color: Colors.white30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade400,
+                        blurRadius: 6,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                    Gap(size.height * 0.04),
-                    CustomTextField(
-                      inData: 'Enter your full name',
-                      title: 'Full Name',
-                      size: size.height * 0.087,
-                      icn: Icons.person_outline,
-                      onChanged:
-                          (value) => registerCubit.updateField(fullName: value),
-                      initialValue: registerState.fullName,
-                      controller: fullNameController,
-                    ),
-                    Gap(size.height * 0.04),
-                    CustomTextField(
-                      inData: 'Enter your phone number',
-                      title: 'Phone Number',
-                      size: size.height * 0.087,
-                      icn: Icons.phone,
-                      onChanged:
-                          (value) =>
-                              registerCubit.updateField(phoneNumber: value),
-                      initialValue: registerState.phoneNumber,
-                      controller: phoneController,
-                    ),
-                    Gap(size.height * 0.04),
-                    CustomTextField(
-                      inData: 'Enter your village',
-                      title: 'Village',
-                      size: size.height * 0.087,
-                      icn: Icons.location_on_outlined,
-                      onChanged:
-                          (value) => registerCubit.updateField(village: value),
-                      initialValue: registerState.village,
-                      controller: villageController,
-                    ),
-                    Gap(size.height * 0.04),
-                    DropdownButtonFormField<String>(
-                      decoration: InputDecoration(
-                        labelText: 'Role',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        prefixIcon: Icon(Icons.work_outline),
-                      ),
-                      value: registerState.role,
-                      items:
-                          ['ASHA', 'ANM'].map((role) {
-                            return DropdownMenuItem<String>(
-                              value: role,
-                              child: Text(role),
-                            );
-                          }).toList(),
-                      onChanged: (value) => registerCubit.updateRole(value!),
-                      hint: Text('Select your role'),
-                    ),
-                    Gap(size.height * 0.04),
-                    Opacity(
-                      opacity: registerState.role == 'ANM' ? 0.5 : 1.0,
-                      child: AbsorbPointer(
-                        absorbing: registerState.role == 'ANM',
-                        child: CustomTextField(
-                          inData: 'Enter your area',
-                          title: 'Area',
-                          size: size.height * 0.087,
-                          icn: Icons.location_city_outlined,
-                          onChanged:
-                              (value) => registerCubit.updateField(area: value),
-                          initialValue: registerState.area,
-                          controller: areaController,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'Enter the phone number registered with your health department',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: size.width * 0.024,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    Gap(size.height * 0.04),
-                    CustomElevatedButton(
-                      text: 'Register',
-                      onPressed: () async {
-                        final state = registerCubit.state;
-
-                        if (state.fullName.isEmpty ||
-                            state.phoneNumber.isEmpty ||
-                            state.village.isEmpty ||
-                            state.role == null ||
-                            (state.role != 'ANM' && state.area.isEmpty) ||
-                            !RegExp(
-                              r'^[6-9]\d{9}$',
-                            ).hasMatch(state.phoneNumber)) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              elevation: 0,
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.transparent,
-                              content: AwesomeSnackbarContent(
-                                title: 'Error',
-                                message: 'Please fill all required fields',
-                                contentType: ContentType.failure,
-                              ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Gap(size.height * 0.02),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isSmall = constraints.maxWidth < 360;
+                          return Text(
+                            'Create Account',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.poppins(
+                              fontSize: isSmall ? 16 : size.width * 0.055,
+                              fontWeight: FontWeight.w600,
                             ),
                           );
-                          return;
-                        }
+                        },
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.04,
+                      ),
+                      CustomTextField(
+                        inData: 'Enter your full name',
+                        title: 'Full Name',
+                        size: 50,
+                        icn: Icons.person_outline,
+                        onChanged:
+                            (value) =>
+                                registerCubit.updateField(fullName: value),
+                        initialValue: registerState.fullName,
+                        controller: fullNameController,
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.04,
+                      ),
+                      CustomTextField(
+                        inData: 'Enter your phone number',
+                        title: 'Phone Number',
+                        size: 50,
+                        icn: Icons.phone,
+                        onChanged:
+                            (value) =>
+                                registerCubit.updateField(phoneNumber: value),
+                        initialValue: registerState.phoneNumber,
+                        controller: phoneController,
+                        keyboardType: TextInputType.number
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.04,
+                      ),
+                      CustomTextField(
+                        inData: 'Enter your village',
+                        title: 'Village',
+                        size: 50,
+                        icn: Icons.location_on_outlined,
+                        onChanged:
+                            (value) =>
+                                registerCubit.updateField(village: value),
+                        initialValue: registerState.village,
+                        controller: villageController,
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.04,
+                      ),
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Role',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          prefixIcon: Icon(Icons.work_outline),
+                        ),
+                        value: registerState.role,
+                        items:
+                            ['ASHA', 'ANM'].map((role) {
+                              return DropdownMenuItem<String>(
+                                value: role,
+                                child: Text(role),
+                              );
+                            }).toList(),
+                        onChanged: (value) => registerCubit.updateRole(value!),
+                        hint: Text('Select your role'),
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.04,
+                      ),
+                      Opacity(
+                        opacity: registerState.role == 'ANM' ? 0.5 : 1.0,
+                        child: AbsorbPointer(
+                          absorbing: registerState.role == 'ANM',
+                          child: CustomTextField(
+                            inData: 'Enter your area',
+                            title: 'Area',
+                            size: 50,
+                            icn: Icons.location_city_outlined,
+                            onChanged:
+                                (value) =>
+                                    registerCubit.updateField(area: value),
+                            initialValue: registerState.area,
+                            controller: areaController,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        'Enter the phone number registered with your health department',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: size.width * 0.024,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.04,
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: CustomElevatedButton(
+                          text: 'Register',
+                          onPressed: () async {
+                            final state = registerCubit.state;
 
-                        // ✅ Save user info to be used later after OTP verification
-                        context.read<PhoneAuthCubit>().setPendingUser(
-                          fullName: state.fullName,
-                          phoneNumber: state.phoneNumber,
-                          village: state.village,
-                          area: state.area,
-                          role: state.role!,
-                        );
-
-                        try {
-                          await FirebaseAuth.instance.verifyPhoneNumber(
-                            phoneNumber: '+91${state.phoneNumber}',
-                            verificationCompleted:
-                                (PhoneAuthCredential credential) {},
-                            verificationFailed: (FirebaseAuthException e) {
+                            if (state.fullName.isEmpty ||
+                                state.phoneNumber.isEmpty ||
+                                state.village.isEmpty ||
+                                state.role == null ||
+                                (state.role != 'ANM' && state.area.isEmpty) ||
+                                !RegExp(
+                                  r'^[6-9]\d{9}$',
+                                ).hasMatch(state.phoneNumber)) {
+                              if (!mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    'Verification failed: ${e.message}',
+                                  elevation: 0,
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                  content: AwesomeSnackbarContent(
+                                    title: 'Error',
+                                    message: 'Please fill all required fields',
+                                    contentType: ContentType.failure,
                                   ),
                                 ),
                               );
-                            },
-                            codeSent: (
-                              String verificationId,
-                              int? resendToken,
-                            ) {
+                              return;
+                            }
+
+                            // ✅ Save user info to be used later after OTP verification
+                            context.read<PhoneAuthCubit>().setPendingUser(
+                              fullName: state.fullName,
+                              phoneNumber: state.phoneNumber,
+                              village: state.village,
+                              area: state.area,
+                              role: state.role!,
+                            );
+
+                            try {
+                              await FirebaseAuth.instance.verifyPhoneNumber(
+                                phoneNumber: '+91${state.phoneNumber}',
+                                verificationCompleted:
+                                    (PhoneAuthCredential credential) {},
+                                verificationFailed: (FirebaseAuthException e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Verification failed: ${e.message}',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                codeSent: (
+                                  String verificationId,
+                                  int? resendToken,
+                                ) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (_) => OTPVerificationPage(
+                                            verificationId: verificationId,
+                                            phoneNumber: state.phoneNumber,
+                                            fullName: state.fullName,
+                                            village: state.village,
+                                            area: state.area,
+                                            role: state.role!,
+                                          ),
+                                    ),
+                                  );
+                                },
+                                codeAutoRetrievalTimeout:
+                                    (String verificationId) {},
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  elevation: 0,
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Colors.transparent,
+                                  content: AwesomeSnackbarContent(
+                                    title: 'Error',
+                                    message: 'Failed to send OTP: $e',
+                                    contentType: ContentType.failure,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          backgroundClr: Colors.blue.shade700,
+                          textClr: Colors.white,
+                        ),
+                      ),
+                      Gap(
+                        size.height < 700
+                            ? size.height * 0.02
+                            : size.height * 0.03,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Already have an account?"),
+                          Gap(4),
+                          GestureDetector(
+                            onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (_) => OTPVerificationPage(
-                                        verificationId: verificationId,
-                                        phoneNumber: state.phoneNumber,
-                                        fullName: state.fullName,
-                                        village: state.village,
-                                        area: state.area,
-                                        role: state.role!,
-                                      ),
+                                  builder: (context) => PhoneLoginPage(),
                                 ),
                               );
                             },
-                            codeAutoRetrievalTimeout:
-                                (String verificationId) {},
-                          );
-                        } catch (e) {
-                          if (!mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              elevation: 0,
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: Colors.transparent,
-                              content: AwesomeSnackbarContent(
-                                title: 'Error',
-                                message: 'Failed to send OTP: $e',
-                                contentType: ContentType.failure,
+                            child: Text(
+                              "Login here",
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                          );
-                        }
-                      },
-                      backgroundClr: Colors.blue.shade700,
-                      textClr: Colors.white,
-                    ),
-                    Gap(size.height * 0.03),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("Already have an account?"),
-                        Gap(4),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PhoneLoginPage(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            "Login here",
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                      Gap(size.height * 0.02),
+                    ],
+                  ),
                 ),
-              ),
-              Gap(size.height * 0.1),
-            ],
+                Gap(size.height * 0.1),
+              ],
+            ),
           ),
         ),
       ),
