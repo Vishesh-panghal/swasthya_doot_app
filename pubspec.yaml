@@ -21,6 +21,13 @@ version: 1.0.0+1
 environment:
   sdk: ^3.7.0
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png" # Replace with your icon path
+  min_sdk_android: 21 # Optional
+  remove_alpha_ios: true
+
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
@@ -37,7 +44,7 @@ dependencies:
   flutter_svg: ^2.2.0
   gap: ^3.0.1
   google_fonts: ^6.2.1
-  flutter_launcher_icons: ^0.14.3
+  flutter_launcher_icons: ^0.14.4
   video_player: ^2.9.5
   speech_to_text: ^7.0.0
   image_picker: ^1.1.2
@@ -51,6 +58,11 @@ dependencies:
   http: ^1.4.0
   google_mlkit_text_recognition: ^0.15.0
   csv: ^6.0.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
+  share_plus: ^11.0.0
+  open_filex: ^4.7.0
+  mime: ^2.0.0
 
 dev_dependencies:
   flutter_test:
