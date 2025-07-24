@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:swasthya_doot/pages/askDidi.dart';
 import 'package:swasthya_doot/pages/detect.dart';
 import 'package:swasthya_doot/pages/record.dart';
@@ -11,9 +12,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:location/location.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:quick_actions/quick_actions.dart';
-import 'package:permission_handler/permission_handler.dart' as permission;
-import 'package:flutter/services.dart';
 
 class MyDashboardScreen extends StatefulWidget {
   final Function(int)? onTabSelected;
@@ -24,52 +22,87 @@ class MyDashboardScreen extends StatefulWidget {
 }
 
 class _MyDashboardScreenState extends State<MyDashboardScreen> {
-  final QuickActions quickActions = const QuickActions();
-
-  @override
-  void initState() {
-    super.initState();
-    quickActions.setShortcutItems([
-      const ShortcutItem(
-        type: 'emergency',
-        localizedTitle: 'Send Emergency',
-        icon: 'icon_emergency', // ensure you add this asset in Android
-      ),
-    ]);
-
-    quickActions.initialize((type) {
-      if (type == 'emergency') {
-        _sendEmergencyLocation();
-      }
-    });
-  }
+  final Location location = Location();
 
   Future<void> _sendEmergencyLocation() async {
-    final locationStatus = await permission.Permission.location.request();
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
 
-    if (locationStatus != permission.PermissionStatus.granted) {
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location services are disabled.')),
+        );
+        return;
+      }
+    }
+
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permission is required.')),
+        );
+        return;
+      }
+    }
+
+    final locData = await location.getLocation();
+
+    final latitude = locData.latitude;
+    final longitude = locData.longitude;
+
+    if (latitude == null || longitude == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Location permission is required.'),
-        ),
+        const SnackBar(content: Text('Could not get location data.')),
       );
       return;
     }
 
-    try {
-      const platform = MethodChannel('emergency_channel');
-      await platform.invokeMethod('startEmergencyService');
+    final prefs = await SharedPreferences.getInstance();
+    final phoneNumberRaw = prefs.getString('emergency_number')?.trim() ?? '';
 
-      // UI fallback: show confirmation
+    if (phoneNumberRaw.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("🚨 Emergency background alert triggered")),
+        const SnackBar(content: Text('No emergency contact found.')),
+      );
+      return;
+    }
+
+    // Add '91' prefix if not present
+    String phoneNumber = phoneNumberRaw;
+    if (!phoneNumber.startsWith('91') && !phoneNumber.startsWith('+91')) {
+      phoneNumber = '91$phoneNumber';
+    }
+
+    final message = Uri.encodeComponent(
+      'Emergency! My location: https://maps.google.com/?q=$latitude,$longitude',
+    );
+
+    try {
+      final whatsappUrl = Uri.parse(
+        'https://wa.me/${phoneNumber.replaceAll("+", "")}?text=$message',
+      );
+      if (await canLaunchUrl(whatsappUrl)) {
+        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+      } else {
+        throw 'Could not launch WhatsApp';
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('🚨 Emergency message sent via WhatsApp')),
       );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("❌ Failed to trigger emergency service: $e")),
+        SnackBar(content: Text('❌ Failed to send emergency message: $e')),
       );
     }
   }
@@ -81,7 +114,6 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return ListView(
-            // added comma after opening parenthesis and before padding
             padding: EdgeInsets.symmetric(
               vertical: size.height * 0.01,
               horizontal: size.width * 0.03,
@@ -178,7 +210,7 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
                 title: 'Ask Didi',
                 subtitle: 'Voice assistant for health information',
                 icon: Icons.mic_none_rounded,
-                clr: Color.fromARGB(255, 0, 97, 253),
+                clr: const Color.fromARGB(255, 0, 97, 253),
                 onTap: () => widget.onTabSelected?.call(1),
               ),
               Gap(size.height * 0.02),
@@ -186,7 +218,7 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
                 title: 'Medicine Detection',
                 subtitle: 'Identify medicines using your camera',
                 icon: Icons.camera_alt_outlined,
-                clr: Color(0xFFFA8900),
+                clr: const Color(0xFFFA8900),
                 onTap: () => widget.onTabSelected?.call(2),
               ),
               Gap(size.height * 0.02),
@@ -194,7 +226,7 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
                 title: 'Patient Records',
                 subtitle: 'View and manage all patient interaction records',
                 icon: Icons.description_outlined,
-                clr: Color(0xFF4DB051),
+                clr: const Color(0xFF4DB051),
                 onTap: () => widget.onTabSelected?.call(3),
               ),
               Gap(size.height * 0.03),

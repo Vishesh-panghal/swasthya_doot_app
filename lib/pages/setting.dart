@@ -1,5 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
-import 'package:swasthya_doot/widgets/common_widget.dart';
 
 class MySettingScreen extends StatelessWidget {
   const MySettingScreen({super.key});
@@ -12,7 +12,7 @@ class MySettingScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: ListView(
-            padding: EdgeInsets.only(bottom: size.height*0.1),
+            padding: EdgeInsets.only(bottom: size.height * 0.1),
             children: [
               Text(
                 'Settings',
@@ -36,122 +36,39 @@ class MySettingScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Network',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.wifi, color: Colors.green),
-                        title: Text('Connected to network'),
-                        subtitle: Text('All features available'),
-                      ),
-                      SwitchListTile(
-                        title: Text('Offline Mode'),
-                        subtitle: Text('Force offline mode to save data'),
-                        value: false,
-                        onChanged: (val) {},
-                      ),
-                      SwitchListTile(
-                        title: Text('Auto Sync'),
-                        subtitle: Text('Automatically sync when online'),
-                        value: true,
-                        onChanged: (val) {},
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Storage section
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Storage',
+                        'Emergency Number',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      Text('Used Storage  24.5 / 500 MB'),
-                      const SizedBox(height: 4),
-                      LinearProgressIndicator(value: 24.5 / 500),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            children: [
-                              Icon(Icons.storage),
-                              Text(
-                                'Database\n16.2 MB',
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Icon(Icons.lock_outline),
-                              Text(
-                                'Media Cache\n8.3 MB',
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        title: Text('Cache Images'),
-                        subtitle: Text('Store images offline for faster access'),
-                        value: true,
-                        onChanged: (val) {},
-                      ),
-                      CustomElevatedButton(
-                        text: 'Clear Cache',
-                        onPressed: () {},
-                        backgroundClr: Colors.blue,
-                        textClr: Colors.white,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
                       Text(
-                        'Notifications',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        'Edit and manage the emergency contact who will be alerted with your location.',
+                        style: TextStyle(color: Colors.grey.shade700),
                       ),
-                      SwitchListTile(
-                        title: Text('Push Notifications'),
-                        subtitle: Text('Receive alerts and reminders'),
-                        value: true,
-                        onChanged: (val) {},
-                      ),
-                      SwitchListTile(
-                        title: Text('Speech Feedback'),
-                        subtitle: Text('Read responses aloud'),
-                        value: true,
-                        onChanged: (val) {},
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
+                            ),
+                            isScrollControlled: true,
+                            builder: (_) => EmergencyNumberEditor(),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Edit Emergency Number'),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
-        
+              const SizedBox(height: 16),
               Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -160,16 +77,16 @@ class MySettingScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    children: const [
                       Text(
                         'App Information',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text('Version: 0.0.1'),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text('© 2025 Ministry of Health, Government of India'),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       Text('Developed for ASHA and ANM workers'),
                       Text('Developed by Vishesh panghal with ❤️'),
                     ],
@@ -179,6 +96,85 @@ class MySettingScreen extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class EmergencyNumberEditor extends StatefulWidget {
+  const EmergencyNumberEditor({super.key});
+
+  @override
+  _EmergencyNumberEditorState createState() => _EmergencyNumberEditorState();
+}
+
+class _EmergencyNumberEditorState extends State<EmergencyNumberEditor> {
+  final phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedNumber();
+  }
+
+  void _loadSavedNumber() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedNumber = prefs.getString('emergency_number') ?? '';
+    phoneController.text = savedNumber;
+  }
+
+  @override
+  void dispose() {
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "Edit Emergency Number",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: phoneController,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              hintText: 'Enter emergency phone number',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+
+              final input = phoneController.text.trim();
+
+              await prefs.setString('emergency_number', input);
+
+              debugPrint("📞 Emergency number saved: $input");
+
+              if (!context.mounted) return;
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade400,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Save"),
+          ),
+        ],
       ),
     );
   }
