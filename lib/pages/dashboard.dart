@@ -114,9 +114,11 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           return ListView(
-            padding: EdgeInsets.symmetric(
-              vertical: size.height * 0.01,
-              horizontal: size.width * 0.03,
+            padding: EdgeInsets.only(
+              top: size.height * 0.01,
+              left: size.width * 0.03,
+              right: size.width * 0.03,
+              bottom: MediaQuery.of(context).padding.bottom + 80,
             ),
             children: [
               FutureBuilder<DocumentSnapshot>(
@@ -273,16 +275,16 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
                             clr: Colors.redAccent,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(maxWidth: 120),
                           child: ElevatedButton(
                             onPressed: _sendEmergencyLocation,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.redAccent,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 20,
+                              padding: EdgeInsets.symmetric(
+                                vertical: size.height * 0.01,
+                                horizontal: size.width * 0.02,
                               ),
                               textStyle: const TextStyle(
                                 fontWeight: FontWeight.bold,
@@ -291,18 +293,51 @@ class _MyDashboardScreenState extends State<MyDashboardScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text('Send Location'),
+                            child: const Text(
+                              'Send Location',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ),
+                        Gap(0.01 * size.width),
                       ],
                     ),
                     Gap(size.height * 0.01),
                     CustomListTileWidget(
-                      title: 'New guideline available',
-                      workDay: '2 days ago',
-                      icn: Icons.notifications_none,
+                      title: 'New ASHA Incentives',
+                      workDay: 'July 2025',
+                      icn: Icons.picture_as_pdf,
                       clr: Colors.orange,
                       backgroundClr: Colors.orange.shade200,
+                      onTap: () async {
+                        final urlString = 'https://nhm.gov.in/New-update-2024-25/ASHA/ASHA-Incentives-July-2025.pdf';
+                        final url = Uri.parse(urlString);
+                        try {
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          } else {
+                            debugPrint('Cannot launch URL: $urlString');
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Could not open guideline PDF'),
+                                ),
+                              );
+                            }
+                          }
+                        } catch (e) {
+                          debugPrint('Error launching URL: $e');
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error opening PDF: $e')),
+                            );
+                          }
+                        }
+                      },
                     ),
                   ],
                 ),

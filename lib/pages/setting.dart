@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MySettingScreen extends StatelessWidget {
   const MySettingScreen({super.key});
@@ -68,6 +69,143 @@ class MySettingScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Feedback & Rating',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        icon: Icon(Icons.feedback, color: Colors.white),
+                        label: Text(
+                          'Send Feedback',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () async {
+                          final Uri emailLaunchUri = Uri(
+                            scheme: 'mailto',
+                            path: 'support@swasthyadoot.app',
+                            queryParameters: {'subject': 'App Feedback'},
+                          );
+                          await launchUrl(emailLaunchUri);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton.icon(
+                        icon: Icon(Icons.star_rate, color: Colors.white),
+                        label: Text(
+                          'Rate This App',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onPressed: () async {
+                          final url = Uri.parse(
+                            'https://play.google.com/store/apps/details?id=com.example.swasthya_doot',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orangeAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Help & Training Resources',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ListTile(
+                        leading: Icon(
+                          Icons.ondemand_video,
+                          color: Colors.redAccent,
+                        ),
+                        title: Text('Watch Training Videos'),
+                        onTap: () async {
+                          final url = Uri.parse(
+                            'https://youtube.com/playlist?list=YOUR_PLAYLIST_ID',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                      ),
+                      ListTile(
+                        leading: Icon(
+                          Icons.picture_as_pdf,
+                          color: Colors.blueAccent,
+                        ),
+                        title: Text('Download PDF Guide'),
+                        onTap: () async {
+                          final url = Uri.parse(
+                            'https://yourdomain.com/swasthya_doot_guide.pdf',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                      ),
+                      // ListTile(
+                      //   leading: Icon(
+                      //     Icons.question_answer,
+                      //     color: Colors.green,
+                      //   ),
+                      //   title: Text('FAQs & Community Support'),
+                      //   onTap: () async {
+                      //     final url = Uri.parse(
+                      //       'https://yourcommunityforum.com',
+                      //     );
+                      //     if (await canLaunchUrl(url)) {
+                      //       await launchUrl(
+                      //         url,
+                      //         mode: LaunchMode.externalApplication,
+                      //       );
+                      //     }
+                      //   },
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Card(
                 shape: RoundedRectangleBorder(
@@ -105,10 +243,10 @@ class EmergencyNumberEditor extends StatefulWidget {
   const EmergencyNumberEditor({super.key});
 
   @override
-  _EmergencyNumberEditorState createState() => _EmergencyNumberEditorState();
+  EmergencyNumberEditorState createState() => EmergencyNumberEditorState();
 }
 
-class _EmergencyNumberEditorState extends State<EmergencyNumberEditor> {
+class EmergencyNumberEditorState extends State<EmergencyNumberEditor> {
   final phoneController = TextEditingController();
 
   @override

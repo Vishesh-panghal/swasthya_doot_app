@@ -284,23 +284,25 @@ class DashboardCard extends StatelessWidget {
               child: Icon(icon, color: Colors.black87),
             ),
             const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: Colors.black87,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -315,18 +317,21 @@ class CustomListTileWidget extends StatelessWidget {
   IconData icn;
   final Color backgroundClr;
   final Color clr;
+  final VoidCallback? onTap;
   CustomListTileWidget({
     required this.title,
     required this.workDay,
     required this.icn,
     required this.backgroundClr,
     required this.clr,
+    this.onTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      onTap: onTap,
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(shape: BoxShape.circle, color: backgroundClr),
