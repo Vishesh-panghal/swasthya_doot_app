@@ -463,8 +463,6 @@ class _MembersCardState extends State<MembersCard> {
                 ),
               ],
             ),
-
-            // Expand Toggle
             Align(
               alignment: Alignment.centerRight,
               child: IconButton(
@@ -692,6 +690,7 @@ class _MembersCardState extends State<MembersCard> {
     );
   }
 
+  // ======================================== Member card View ==================================================//
   Widget _buildMemberCard(MemberModel member) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -703,6 +702,14 @@ class _MembersCardState extends State<MembersCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Relation: ${member.relation}',
+            style: TextStyle(
+              fontSize: 13,
+              fontStyle: FontStyle.italic,
+              color: Colors.grey.shade700,
+            ),
+          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -742,7 +749,6 @@ class _MembersCardState extends State<MembersCard> {
                       }
                     },
                   ),
-                  // --- Add Delete button for member ---
                   TextButton(
                     child: const Text(
                       "Delete",
@@ -912,6 +918,7 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
   final _headController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
+  String? _selectedCaste;
 
   @override
   void initState() {
@@ -919,6 +926,8 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
     _headController.text = widget.existingName ?? '';
     _phoneController.text = widget.existingPhone ?? '';
     _addressController.text = widget.existingAddress ?? '';
+    // You can initialize _selectedCaste here if you want, e.g.:
+    // _selectedCaste = "General";
   }
 
   @override
@@ -948,6 +957,7 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
           address: _addressController.text.trim(),
           aashaId: uid,
           members: [],
+          caste: _selectedCaste,
         );
 
         await FirebaseFirestore.instance
@@ -1018,17 +1028,47 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(labelText: "Phone *"),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty ? "Required" : null,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Required";
+                  }
+                  final pattren = RegExp(r'^(?:\+91)?[6-9]\d{9}$');
+                  if (!pattren.hasMatch(value.trim())) {
+                    return 'Enter a valid mobile number';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(labelText: "Address *"),
-                validator:
-                    (value) =>
-                        value == null || value.isEmpty ? "Required" : null,
+              // Replace the single Address TextFormField with the following Row containing Address and Caste dropdown
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: TextFormField(
+                      controller: _addressController,
+                      decoration: const InputDecoration(labelText: "Address *"),
+                      validator: (value) => value == null || value.isEmpty ? "Required" : null,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 1,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCaste,
+                      decoration: const InputDecoration(labelText: "Caste *"),
+                      items: const [
+                        DropdownMenuItem(value: "General", child: Text("General")),
+                        DropdownMenuItem(value: "OBC", child: Text("OBC")),
+                        DropdownMenuItem(value: "SC", child: Text("SC")),
+                        DropdownMenuItem(value: "ST", child: Text("ST")),
+                        DropdownMenuItem(value: "Other", child: Text("Other")),
+                      ],
+                      onChanged: (val) => setState(() => _selectedCaste = val),
+                      validator: (value) => value == null || value.isEmpty ? "Required" : null,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               ElevatedButton(
@@ -1049,7 +1089,7 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
   }
 }
 
-// ============================================== AddFamily Members Bottomsheet  ==============================================//
+// ============================================== AddFamily Members Card  ==============================================//
 
 class AddMemberForm extends StatefulWidget {
   final MemberModel? existingMember;

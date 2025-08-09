@@ -20,7 +20,7 @@ class _MyAskDidiScreenState extends State<MyAskDidiScreen> {
   final TextEditingController _controller = TextEditingController();
 
   final List<Map<String, String>> _messages =
-      []; // now holds {'text', 'time', 'sender'}
+      [];
 
   final ScrollController _scrollController = ScrollController();
   bool _isTyping = false;

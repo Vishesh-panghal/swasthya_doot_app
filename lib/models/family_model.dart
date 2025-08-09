@@ -8,6 +8,7 @@ class FamilyModel {
   final String address;
   final String aashaId;
   final String? familyId;
+  final String? caste;
   final List<MemberModel> members;
 
   FamilyModel({
@@ -18,6 +19,7 @@ class FamilyModel {
     required this.address,
     required this.aashaId,
     this.familyId,
+    required this.caste,
     this.members = const [],
   });
 
@@ -28,6 +30,7 @@ class FamilyModel {
       'village': village,
       'address': address,
       'aasha_id': aashaId,
+      if (caste != null) 'caste': caste,
       if (familyId != null) 'family_id': familyId,
       'members': members.map((e) => e.toMap()).toList(),
     };
@@ -42,9 +45,11 @@ class FamilyModel {
       address: map['address'] ?? '',
       aashaId: map['aasha_id'] ?? '',
       familyId: map['family_id'],
-      members: (map['members'] as List<dynamic>? ?? [])
-          .map((e) => MemberModel.fromMap(e as Map<String, dynamic>))
-          .toList(),
+      caste: map['caste'],
+      members:
+          (map['members'] as List<dynamic>? ?? [])
+              .map((e) => MemberModel.fromMap(e as Map<String, dynamic>))
+              .toList(),
     );
   }
 
@@ -55,6 +60,8 @@ class FamilyModel {
     String? village,
     String? address,
     String? aashaId,
+    String? familyId,
+    String? caste,
     List<MemberModel>? members,
   }) {
     return FamilyModel(
@@ -64,7 +71,8 @@ class FamilyModel {
       village: village ?? this.village,
       address: address ?? this.address,
       aashaId: aashaId ?? this.aashaId,
-      familyId: familyId,
+      familyId: familyId ?? this.familyId,
+      caste: caste ?? this.caste,
       members: members ?? this.members,
     );
   }

@@ -474,7 +474,6 @@ class _MyRecordScreenState extends State<MyRecordScreen>
                       },
                     )
                     : StreamBuilder<String>(
-                      // Use a dummy stream since search is not implemented as a real stream yet
                       stream: Stream.value(""),
                       builder: (context, snapshot) {
                         final search = _searchController.text.toLowerCase();
@@ -548,7 +547,7 @@ class _MyRecordScreenState extends State<MyRecordScreen>
                                 return MembersCard(
                                   name: family.head,
                                   phone: family.phone,
-                                  date: "", // add if needed
+                                  date: "",
                                   village: family.village,
                                   address: family.address,
                                   aashaId: family.aashaId,

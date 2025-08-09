@@ -40,7 +40,7 @@ class PhoneAuthCubit extends Cubit<PhoneAuthState> {
       forceResendingToken: null,
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
-        await _storeUserData(); // Store user info if credential is auto verified
+        await _storeUserData();
         emit(PhoneAuthVerified());
       },
       verificationFailed: (FirebaseAuthException e) {
@@ -57,7 +57,6 @@ class PhoneAuthCubit extends Cubit<PhoneAuthState> {
     );
   }
 
-  // 🔹 Verify OTP manually
   void verifyOtp(String otp, String verificationId) async {
     if (verificationId.isEmpty) {
       emit(PhoneAuthError("OTP session expired or invalid. Please retry."));
@@ -76,7 +75,7 @@ class PhoneAuthCubit extends Cubit<PhoneAuthState> {
       final user = userCredential.user;
 
       if (user != null) {
-        await _storeUserData(); // Store after successful login
+        await _storeUserData();
         emit(PhoneAuthVerified());
       } else {
         emit(PhoneAuthError("User not found after verification"));
@@ -88,7 +87,6 @@ class PhoneAuthCubit extends Cubit<PhoneAuthState> {
     }
   }
 
-  // 🔹 Store to Firestore
   Future<void> _storeUserData() async {
     final user = _auth.currentUser;
     if (user != null && _pendingUser != null) {
