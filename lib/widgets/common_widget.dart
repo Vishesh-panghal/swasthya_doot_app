@@ -374,6 +374,7 @@ class MembersCard extends StatefulWidget {
   final String date;
   final String village;
   final String address;
+  final String? caste;
   final String aashaId;
   final List<MemberModel> members;
   final void Function(MemberModel) onAddMember;
@@ -389,6 +390,7 @@ class MembersCard extends StatefulWidget {
     required this.aashaId,
     required this.members,
     required this.onAddMember,
+    required this.caste,
     this.onRefresh,
   });
 
@@ -495,7 +497,20 @@ class _MembersCardState extends State<MembersCard> {
                       _infoRow('Family Head:', widget.name),
                       _infoRow('Phone:', widget.phone),
                       _infoRow('Village:', widget.village),
-                      _infoRow('Address:', widget.address),
+                      Row(
+                        children: [
+                          Expanded(child: _infoRow('Address:', widget.address)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Caste: ${widget.caste}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       _infoRow('ASHA ID:', widget.aashaId),
                       const SizedBox(height: 8),
                       const Text(
@@ -1048,7 +1063,11 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
                     child: TextFormField(
                       controller: _addressController,
                       decoration: const InputDecoration(labelText: "Address *"),
-                      validator: (value) => value == null || value.isEmpty ? "Required" : null,
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? "Required"
+                                  : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -1058,14 +1077,21 @@ class _AddFamilyHeadFormState extends State<AddFamilyHeadForm> {
                       value: _selectedCaste,
                       decoration: const InputDecoration(labelText: "Caste *"),
                       items: const [
-                        DropdownMenuItem(value: "General", child: Text("General")),
+                        DropdownMenuItem(
+                          value: "General",
+                          child: Text("General"),
+                        ),
                         DropdownMenuItem(value: "OBC", child: Text("OBC")),
                         DropdownMenuItem(value: "SC", child: Text("SC")),
                         DropdownMenuItem(value: "ST", child: Text("ST")),
                         DropdownMenuItem(value: "Other", child: Text("Other")),
                       ],
                       onChanged: (val) => setState(() => _selectedCaste = val),
-                      validator: (value) => value == null || value.isEmpty ? "Required" : null,
+                      validator:
+                          (value) =>
+                              value == null || value.isEmpty
+                                  ? "Required"
+                                  : null,
                     ),
                   ),
                 ],

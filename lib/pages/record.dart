@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_types_as_parameter_names
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -229,6 +231,7 @@ class _MyRecordScreenState extends State<MyRecordScreen>
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    int totalPopulation = _families.fold(0, (sum, family) => sum + family.members.length);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -463,6 +466,28 @@ class _MyRecordScreenState extends State<MyRecordScreen>
                   ],
                 ),
                 Gap(size.height * 0.02),
+                Padding(
+                  padding: EdgeInsets.symmetric(vertical: size.height * 0.01),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Total Population: ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: size.height * 0.022,
+                        ),
+                      ),
+                      Text(
+                        '$totalPopulation',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: size.height * 0.022,
+                          color: Colors.blueAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 _families.isEmpty
                     ? Lottie.asset(
                       'assets/animations/heart_beat.json',
@@ -549,6 +574,7 @@ class _MyRecordScreenState extends State<MyRecordScreen>
                                   phone: family.phone,
                                   date: "",
                                   village: family.village,
+                                  caste: family.caste,
                                   address: family.address,
                                   aashaId: family.aashaId,
                                   members: filteredMembers,
